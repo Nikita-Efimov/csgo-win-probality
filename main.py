@@ -18,7 +18,7 @@ def parse_match(link):
     win_prob_team1 *= (first_team_head_to_head / second_team_head_to_head)
     win_prob_team1 *= (int(get_ranks(soup)[1][1:]) / int(get_ranks(soup)[0][1:])) / 70 + 1
 
-    format = '%10s'
+    format = '%15s'
     print(format % get_names(soup)[0], format % get_names(soup)[1])
     print_coefs(win_prob_team1)
 
@@ -26,7 +26,7 @@ def print_coefs(win_prob_team1):
     team1_coef = 1 / (win_prob_team1 / 100)
     team2_coef = 1 / ((100 - win_prob_team1) / 100)
 
-    format = '%10.2f'
+    format = '%15.2f'
     print(format % team1_coef, format % team2_coef)
 
 def get_num_of_maps(page_src):
