@@ -16,14 +16,11 @@ def parse_match(link):
 
     win_prob_team1 *= map_num_prob
     win_prob_team1 *= (first_team_head_to_head / second_team_head_to_head)
-
-    print_coefs(win_prob_team1)
+    win_prob_team1 *= (int(get_ranks(soup)[1][1:]) / int(get_ranks(soup)[0][1:])) / 70 + 1
 
     print(get_names(soup))
-    print(get_teams_profile_links(soup))
-    print(get_ranks(soup))
-    print(num_of_maps)
-    
+    print_coefs(win_prob_team1)
+
 def get_num_of_maps(page_src):
     match_desc: str = page_src.find('div', class_='padding preformatted-text').text
     num_of_maps: str = match_desc[match_desc.find('Best of ') + 8:match_desc.find('Best of') + 9]
@@ -58,7 +55,7 @@ def print_coefs(win_prob_team1):
 
     format = '%.2f'
     print(format % team1_coef, format % team2_coef)
-    
+
 # returns an array of names of teams in the match
 def get_names(soup):
 	names=[]
