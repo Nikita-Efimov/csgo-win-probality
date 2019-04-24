@@ -35,8 +35,8 @@ def get_num_of_maps(page_src):
     return int(num_of_maps)
 
 def head_to_head(page_src):
-    first_team_head_to_head = 0
-    second_team_head_to_head = 0
+    first_team_head_to_head = 1
+    second_team_head_to_head = 1
 
     head_to_head_content: str = page_src.find('div', class_='standard-box head-to-head-listing')
     results_table: str = head_to_head_content.find('table', class_='table')
