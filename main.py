@@ -19,7 +19,7 @@ def parse_match(link):
     win_prob_team1 *= (int(get_ranks(soup)[1][1:]) / int(get_ranks(soup)[0][1:])) / 70 + 1
 
     format = '%10s'
-    print(format % get_names(soup)[0], format % get_names(soup)[0])
+    print(format % get_names(soup)[0], format % get_names(soup)[1])
     print_coefs(win_prob_team1)
 
 def print_coefs(win_prob_team1):
