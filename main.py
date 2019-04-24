@@ -31,7 +31,7 @@ def parse_match(link):
     print((block_size + 1) * '-' + '+' + (block_size + 1) * '-')
 
 def print_coefs(win_prob_team1, win_prob_team2):
-    max_percent = 103
+    max_percent = 95
 
     team1_coef = 1 / (win_prob_team1 / max_percent)
     team2_coef = 1 / (win_prob_team2 / max_percent)
