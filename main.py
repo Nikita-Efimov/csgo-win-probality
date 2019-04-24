@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from scraper import Scraper
 
 def main():
-    link = 'https://www.hltv.org/matches/2332372/isurus-vs-detona-esl-pro-league-season-9-americas'
+    link = str(input())
     parse_match(link)
 
 def parse_match(link):
