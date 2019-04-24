@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 from scraper import Scraper
 
+block_size = 20
+
 def main():
     link = str(input())
     parse_match(link)
@@ -14,20 +16,28 @@ def parse_match(link):
 
     first_team_head_to_head, second_team_head_to_head = head_to_head(soup)
 
-    win_prob_team1 *= map_num_prob
     win_prob_team1 *= (first_team_head_to_head / second_team_head_to_head)
     win_prob_team1 *= (int(get_ranks(soup)[1][1:]) / int(get_ranks(soup)[0][1:])) / 70 + 1
 
-    format = '%15s'
-    print(format % get_names(soup)[0], format % get_names(soup)[1])
-    print_coefs(win_prob_team1)
+    win_prob_team2 = 100 - win_prob_team1
 
-def print_coefs(win_prob_team1):
-    team1_coef = 1 / (win_prob_team1 / 100)
-    team2_coef = 1 / ((100 - win_prob_team1) / 100)
+    win_prob_team1 *= map_num_prob
+    win_prob_team2 *= map_num_prob
 
-    format = '%15.2f'
-    print(format % team1_coef, format % team2_coef)
+    print((block_size + 1) * '-' + '+' + (block_size + 1) * '-')
+    format = '%' + str(block_size) + 's'
+    print(format % get_names(soup)[0], '|', format % get_names(soup)[1])
+    print_coefs(win_prob_team1, win_prob_team2)
+    print((block_size + 1) * '-' + '+' + (block_size + 1) * '-')
+
+def print_coefs(win_prob_team1, win_prob_team2):
+    max_percent = 103
+
+    team1_coef = 1 / (win_prob_team1 / max_percent)
+    team2_coef = 1 / (win_prob_team2 / max_percent)
+
+    format = '%' + str(block_size) + '.2f'
+    print(format % team1_coef, '|', format % team2_coef)
 
 def get_num_of_maps(page_src):
     match_desc: str = page_src.find('div', class_='padding preformatted-text').text
