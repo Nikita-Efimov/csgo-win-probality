@@ -23,10 +23,8 @@ class InfoAboutGame:
             self.probs.update({map_name: [50, 50]})
 
     def get_coef_from_prob(prob):
-        try:
-            coef = 1 / (prob / InfoAboutGame.max_percent)
-        except ZeroDivisionError:
-            coef = 10
+        try: coef = 1 / (prob / InfoAboutGame.max_percent)
+        except ZeroDivisionError: coef = 10
         if coef < 1: coef = 1
 
         return coef
