@@ -22,6 +22,15 @@ class InfoAboutGame:
         for map_name in InfoAboutGame.maps_names:
             self.probs.update({map_name: [50, 50]})
 
+    def get_coef_from_prob(prob):
+        try:
+            coef = 1 / (prob / InfoAboutGame.max_percent)
+        except ZeroDivisionError:
+            coef = 10
+        if coef < 1: coef = 1
+
+        return coef
+
     def print_block(self):
         print(InfoAboutGame.map_name_size * ' ' + '+' + (InfoAboutGame.team_name_size + 1) * '-' + '+' + (InfoAboutGame.team_name_size + 2) * '-' + '+')
         format = '%' + str(InfoAboutGame.team_name_size) + 's'
@@ -35,13 +44,14 @@ class InfoAboutGame:
         for map_name in InfoAboutGame.maps_names:
             team1_prob = self.probs[map_name][0]
             team2_prob = self.probs[map_name][1]
-            team1_coef = 1 / (team1_prob / InfoAboutGame.max_percent)
-            team2_coef = 1 / (team2_prob / InfoAboutGame.max_percent)
+            team1_coef = InfoAboutGame.get_coef_from_prob(team1_prob)
+            team2_coef = InfoAboutGame.get_coef_from_prob(team2_prob)
 
             format = '%' + str(InfoAboutGame.coef_size) + '.2f'
             print(map_name_format % map_name, '|', format % team1_coef, '| ', format % team2_coef, '|')
 
         print('-' * (InfoAboutGame.map_name_size + InfoAboutGame.coef_size * 2 + 8))
+
 
 def main():
     # link = str(input())
@@ -68,6 +78,13 @@ def parse_match(link):
     # print_coefs(win_prob_team1, win_prob_team2)
 
     iag = InfoAboutGame(get_names(soup)[0], get_names(soup)[1])
+    iag.probs['Cache'] = [50, 50]
+    iag.probs['Dust 2'] = [60, 40]
+    iag.probs['Mirage'] = [70, 30]
+    iag.probs['Inferno'] = [80, 20]
+    iag.probs['Nuke'] = [90, 10]
+    iag.probs['Train'] = [95, 10]
+    iag.probs['Overpass'] = [100, 0]
     iag.print_block()
 
 def print_coefs(win_prob_team1, win_prob_team2):
