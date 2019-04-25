@@ -1,10 +1,51 @@
 from bs4 import BeautifulSoup
 from scraper import Scraper
 
-block_size = 20
+
+class InfoAboutGame:
+    # Sizes
+    map_name_size = 9
+    team_name_size = 14
+    coef_size = team_name_size - 1
+
+    # Maps
+    maps_names = ['Cache', 'Dust 2', 'Mirage', 'Inferno', 'Nuke', 'Train', 'Overpass']
+
+    # Prob to coef converation options
+    max_percent = 93.5
+
+    def __init__(self, team1_name, team2_name):
+        self.team1_name: str = team1_name[:InfoAboutGame.team_name_size - 1]
+        self.team2_name: str = team2_name[:InfoAboutGame.team_name_size - 1]
+
+        self.probs: dict = {}
+        for map_name in InfoAboutGame.maps_names:
+            self.probs.update({map_name: [50, 50]})
+
+    def print_block(self):
+        print(InfoAboutGame.map_name_size * ' ' + '+' + (InfoAboutGame.team_name_size + 1) * '-' + '+' + (InfoAboutGame.team_name_size + 2) * '-' + '+')
+        format = '%' + str(InfoAboutGame.team_name_size) + 's'
+        print(InfoAboutGame.map_name_size * ' ' + '|' + format % self.team1_name, '|', format % self.team2_name, '|')
+
+
+        map_name_format = '%8s'
+
+        print(InfoAboutGame.map_name_size * '-' + '+' + '-' * (InfoAboutGame.team_name_size + 1) + '+' + '-' * (InfoAboutGame.team_name_size + 2) + '+')
+
+        for map_name in InfoAboutGame.maps_names:
+            team1_prob = self.probs[map_name][0]
+            team2_prob = self.probs[map_name][1]
+            team1_coef = 1 / (team1_prob / InfoAboutGame.max_percent)
+            team2_coef = 1 / (team2_prob / InfoAboutGame.max_percent)
+
+            format = '%' + str(InfoAboutGame.coef_size) + '.2f'
+            print(map_name_format % map_name, '|', format % team1_coef, '| ', format % team2_coef, '|')
+
+        print('-' * (InfoAboutGame.map_name_size + InfoAboutGame.coef_size * 2 + 8))
 
 def main():
-    link = str(input())
+    # link = str(input())
+    link = 'https://www.hltv.org/matches/2332308/astralis-vs-big-esl-pro-league-season-9-europe'
     parse_match(link)
 
 def parse_match(link):
@@ -24,11 +65,10 @@ def parse_match(link):
     win_prob_team1 *= map_num_prob
     win_prob_team2 *= map_num_prob
 
-    print((block_size + 1) * '-' + '+' + (block_size + 1) * '-')
-    format = '%' + str(block_size) + 's'
-    print(format % get_names(soup)[0], '|', format % get_names(soup)[1])
-    print_coefs(win_prob_team1, win_prob_team2)
-    print((block_size + 1) * '-' + '+' + (block_size + 1) * '-')
+    # print_coefs(win_prob_team1, win_prob_team2)
+
+    iag = InfoAboutGame(get_names(soup)[0], get_names(soup)[1])
+    iag.print_block()
 
 def print_coefs(win_prob_team1, win_prob_team2):
     max_percent = 95
@@ -36,7 +76,7 @@ def print_coefs(win_prob_team1, win_prob_team2):
     team1_coef = 1 / (win_prob_team1 / max_percent)
     team2_coef = 1 / (win_prob_team2 / max_percent)
 
-    format = '%' + str(block_size) + '.2f'
+    format = '%4.2f'
     print(format % team1_coef, '|', format % team2_coef)
 
 def get_num_of_maps(page_src):
