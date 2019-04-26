@@ -10,9 +10,9 @@ class Scraper:
 	def get_html(url):
 		request: CloudflareScraper
 
-		for i in range(500):
+		for i in range(120):
 			try:
-				request = Scraper.scraper.get(url, headers={'User-Agent' : Scraper.personality}, timeout=0.7)
+				request = Scraper.scraper.get(url, headers={'User-Agent': Scraper.personality}, timeout=0.7)
 				if request.status_code == 200:
 					return request.content
 				else:

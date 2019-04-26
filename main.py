@@ -1,89 +1,99 @@
+from time import time
 from bs4 import BeautifulSoup
 from scraper import Scraper
-
-
-class InfoAboutGame:
-    # Sizes
-    map_name_size = 9
-    team_name_size = 14
-    coef_size = team_name_size - 1
-
-    # Maps
-    maps_names = ['Cache', 'Dust 2', 'Mirage', 'Inferno', 'Nuke', 'Train', 'Overpass']
-
-    # Prob to coef converation options
-    max_percent = 93.5
-
-    def __init__(self, team1_name, team2_name):
-        self.team1_name: str = team1_name[:InfoAboutGame.team_name_size - 1]
-        self.team2_name: str = team2_name[:InfoAboutGame.team_name_size - 1]
-
-        self.probs: dict = {}
-        for map_name in InfoAboutGame.maps_names:
-            self.probs.update({map_name: [50, 50]})
-
-    def get_coef_from_prob(prob):
-        try: coef = 1 / (prob / InfoAboutGame.max_percent)
-        except ZeroDivisionError: coef = 10
-        if coef < 1: coef = 1
-
-        return coef
-
-    def print_block(self):
-        print(InfoAboutGame.map_name_size * ' ' + '+' + (InfoAboutGame.team_name_size + 1) * '-' + '+' + (InfoAboutGame.team_name_size + 2) * '-' + '+')
-        format = '%' + str(InfoAboutGame.team_name_size) + 's'
-        print(InfoAboutGame.map_name_size * ' ' + '|' + format % self.team1_name, '|', format % self.team2_name, '|')
-
-
-        map_name_format = '%8s'
-
-        print(InfoAboutGame.map_name_size * '-' + '+' + '-' * (InfoAboutGame.team_name_size + 1) + '+' + '-' * (InfoAboutGame.team_name_size + 2) + '+')
-
-        for map_name in InfoAboutGame.maps_names:
-            team1_prob = self.probs[map_name][0]
-            team2_prob = self.probs[map_name][1]
-            team1_coef = InfoAboutGame.get_coef_from_prob(team1_prob)
-            team2_coef = InfoAboutGame.get_coef_from_prob(team2_prob)
-
-            format = '%' + str(InfoAboutGame.coef_size) + '.2f'
-            print(map_name_format % map_name, '|', format % team1_coef, '| ', format % team2_coef, '|')
-
-        print('-' * (InfoAboutGame.map_name_size + InfoAboutGame.coef_size * 2 + 8))
+from structs import InfoAboutGame, Map, GetTeamRaiting
 
 
 def main():
-    # link = str(input())
-    link = 'https://www.hltv.org/matches/2332308/astralis-vs-big-esl-pro-league-season-9-europe'
+    link = str(input())
+    # link = 'https://www.hltv.org/matches/2332308/astralis-vs-big-esl-pro-league-season-9-europe'
     parse_match(link)
 
 def parse_match(link):
-    win_prob_team1 = 50
-
     soup = BeautifulSoup(Scraper.get_html(link), 'lxml')
 
-    map_num_prob: float = (0, 0.99, 1, 1.01, 1.015, 1.02)[get_num_of_maps(soup)]
-
-    first_team_head_to_head, second_team_head_to_head = head_to_head(soup)
-
-    win_prob_team1 *= (first_team_head_to_head / second_team_head_to_head)
-    win_prob_team1 *= (int(get_ranks(soup)[1][1:]) / int(get_ranks(soup)[0][1:])) / 70 + 1
-
-    win_prob_team2 = 100 - win_prob_team1
-
-    win_prob_team1 *= map_num_prob
-    win_prob_team2 *= map_num_prob
-
-    # print_coefs(win_prob_team1, win_prob_team2)
-
     iag = InfoAboutGame(get_names(soup)[0], get_names(soup)[1])
-    iag.probs['Cache'] = [50, 50]
-    iag.probs['Dust 2'] = [60, 40]
-    iag.probs['Mirage'] = [70, 30]
-    iag.probs['Inferno'] = [80, 20]
-    iag.probs['Nuke'] = [90, 10]
-    iag.probs['Train'] = [95, 10]
-    iag.probs['Overpass'] = [100, 0]
+
+    check_last_games(soup, iag)
+
+    # iag.probs['Cache'] = [50, 50]
+    # iag.probs['Dust 2'] = [60, 40]
+    # iag.probs['Mirage'] = [70, 30]
+    # iag.probs['Inferno'] = [80, 20]
+    # iag.probs['Nuke'] = [90, 10]
+    # iag.probs['Train'] = [95, 10]
+    # iag.probs['Overpass'] = [100, 0]
     iag.print_block()
+
+def check_last_games(page_src, iag):
+    team1_id = page_src.find('div', class_='team1-gradient').find('a').get('href').split('/')[2]
+    team2_id = page_src.find('div', class_='team2-gradient').find('a').get('href').split('/')[2]
+
+    print(team1_id)
+    check_last_team_games(team1_id, iag, 0)
+    print(team2_id)
+    check_last_team_games(team2_id, iag, 1)
+
+def check_last_team_games(team_id, iag, iag_pos):
+    short_to_long_maps_names = {'cch': 'Cache', 'd2': 'Dust2', 'mrg': 'Mirage', 'inf': 'Inferno', 'nuke': 'Nuke', 'trn': 'Train', 'ovp': 'Overpass', 'vrt': 'Vertigo'}
+
+    home_team_raiting = GetTeamRaiting.get(team_id)
+
+    team_results = BeautifulSoup(Scraper.get_html('https://www.hltv.org/results?team=' + str(team_id)), 'lxml')
+    for container in team_results.find_all('div', class_='results-sublist'):
+        try:
+            date = int(str(container.find('div', class_='result-con').get('data-zonedgrouping-entry-unix'))[:10])
+        except ValueError: date = time()
+        actual_coef = date / time()
+        # print('Time:', date, actual_coef)
+        for result in container.find_all('div', class_='result-con'):
+            map_text = result.find('div', class_='map-text').text
+
+            enemy_team_id = result.find('div', class_='team2').find('img', class_='team-logo').get('src').split('/')[6]
+            enemy_team_raiting = GetTeamRaiting.get(enemy_team_id)
+
+            if map_text == 'bo3' or map_text == 'bo5':
+                match_link = result.find('a', class_='a-reset').get('href')
+                maps = check_match(match_link)
+                for map in maps:
+                    iag.probs[map.name][iag_pos] *= calc_coefs_for_map(map.team1_score, map.team2_score, enemy_team_raiting, actual_coef)
+                    print(map.name, map.team1_score + '-' + map.team2_score)
+            elif map_text in short_to_long_maps_names:
+                map_name = short_to_long_maps_names[map_text]
+                result_scre = result.find('td', class_='result-score').text
+                team1_score = result_scre.split('-')[0].strip()
+                team2_score = result_scre.split('-')[1].strip()
+
+                iag.probs[map_name][iag_pos] *= calc_coefs_for_map(team1_score, team2_score, enemy_team_raiting, actual_coef)
+                print(map_name, team1_score + '-' + team2_score)
+
+def calc_coefs_for_map(team1_score, team2_score, enemy_team_raiting, actual_coef):
+    raiting_coef = (151 - enemy_team_raiting) / 75
+
+    team1_score = int(team1_score)
+    team2_score = int(team2_score)
+    if team1_score < 1: team1_score = 1
+    if team2_score < 1: team2_score = 1
+
+    game_coef = team1_score / team2_score
+
+    return game_coef * raiting_coef * actual_coef
+
+def check_match(link):
+    match_page = BeautifulSoup(Scraper.get_html('https://www.hltv.org/' + link), 'lxml')
+
+    maps = []
+    for map in match_page.find_all('div', class_='mapholder'):
+        try:
+            map_name = map.find('div', class_='mapname').text
+            results = map.find('div', class_='results').text.split(' ')[0]
+            team1_score = results.split(':')[0]
+            team2_score = results.split(':')[1]
+            maps.append(Map(map_name, team1_score, team2_score))
+        except AttributeError:
+            pass
+
+    return maps
 
 def print_coefs(win_prob_team1, win_prob_team2):
     max_percent = 95
