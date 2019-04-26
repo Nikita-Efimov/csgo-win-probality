@@ -6,7 +6,7 @@ from structs import InfoAboutGame, Map, GetTeamRaiting
 
 def main():
     # link = str(input())
-    link = 'https://www.hltv.org/matches/2332718/nemiga-vs-havu-vulkanbet-invitational'
+    link = 'https://www.hltv.org/matches/2332746/ago-vs-nemiga-lootbet-season-2'
     parse_match(link)
 
 def parse_match(link):
@@ -77,7 +77,7 @@ def calc_coefs_for_map(team1_score, team2_score, enemy_team_raiting, actual_coef
 
     game_coef = team1_score / team2_score
 
-    return game_coef * raiting_coef * actual_coef / 100 + 1
+    return game_coef * raiting_coef * actual_coef / 80 + 1
 
 def check_match(link):
     match_page = BeautifulSoup(Scraper.get_html('https://www.hltv.org/' + link), 'lxml')
