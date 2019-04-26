@@ -23,12 +23,12 @@ class Map:
 
 class InfoAboutGame:
     # Sizes
-    map_name_size = 9
+    map_name_size = 12
     team_name_size = 14
     coef_size = team_name_size - 1
 
     # Maps
-    maps_names = ['Cache', 'Dust2', 'Mirage', 'Inferno', 'Nuke', 'Train', 'Overpass', 'Vertigo']
+    maps_names = ['Cache', 'Dust2', 'Mirage', 'Inferno', 'Nuke', 'Train', 'Overpass', 'Vertigo', 'Cobblestone']
 
     # Prob to coef converation options
     max_percent = 93.5
@@ -42,6 +42,8 @@ class InfoAboutGame:
             self.probs.update({map_name: [50, 50]})
 
     def get_coef_from_prob(prob):
+        if prob < 1: prob = 1
+
         try: coef = 1 / (prob / InfoAboutGame.max_percent)
         except ZeroDivisionError: coef = 10
         if coef < 1: coef = 1
@@ -55,7 +57,7 @@ class InfoAboutGame:
         print(InfoAboutGame.map_name_size * ' ' + '|' + format % self.team1_name, '|', format % self.team2_name, '|')
 
 
-        map_name_format = '%8s'
+        map_name_format = '%' + str(InfoAboutGame.map_name_size - 1) + 's'
 
         print(InfoAboutGame.map_name_size * '-' + '+' + '-' * (InfoAboutGame.team_name_size + 1) + '+' + '-' * (InfoAboutGame.team_name_size + 2) + '+')
 

@@ -5,8 +5,8 @@ from structs import InfoAboutGame, Map, GetTeamRaiting
 
 
 def main():
-    link = str(input())
-    # link = 'https://www.hltv.org/matches/2332308/astralis-vs-big-esl-pro-league-season-9-europe'
+    # link = str(input())
+    link = 'https://www.hltv.org/matches/2332718/nemiga-vs-havu-vulkanbet-invitational'
     parse_match(link)
 
 def parse_match(link):
@@ -57,7 +57,7 @@ def check_last_team_games(team_id, iag, iag_pos):
                 maps = check_match(match_link)
                 for map in maps:
                     iag.probs[map.name][iag_pos] *= calc_coefs_for_map(map.team1_score, map.team2_score, enemy_team_raiting, actual_coef)
-                    print(map.name, map.team1_score + '-' + map.team2_score)
+                    print(map.name, map.team1_score + '-' + map.team2_score, calc_coefs_for_map(map.team1_score, map.team2_score, enemy_team_raiting, actual_coef))
             elif map_text in short_to_long_maps_names:
                 map_name = short_to_long_maps_names[map_text]
                 result_scre = result.find('td', class_='result-score').text
@@ -65,10 +65,10 @@ def check_last_team_games(team_id, iag, iag_pos):
                 team2_score = result_scre.split('-')[1].strip()
 
                 iag.probs[map_name][iag_pos] *= calc_coefs_for_map(team1_score, team2_score, enemy_team_raiting, actual_coef)
-                print(map_name, team1_score + '-' + team2_score)
+                print(map_name, team1_score + '-' + team2_score, calc_coefs_for_map(team1_score, team2_score, enemy_team_raiting, actual_coef))
 
 def calc_coefs_for_map(team1_score, team2_score, enemy_team_raiting, actual_coef):
-    raiting_coef = (151 - enemy_team_raiting) / 75
+    raiting_coef = (300 - enemy_team_raiting) / 100
 
     team1_score = int(team1_score)
     team2_score = int(team2_score)
@@ -77,7 +77,7 @@ def calc_coefs_for_map(team1_score, team2_score, enemy_team_raiting, actual_coef
 
     game_coef = team1_score / team2_score
 
-    return game_coef * raiting_coef * actual_coef
+    return game_coef * raiting_coef * actual_coef / 100 + 1
 
 def check_match(link):
     match_page = BeautifulSoup(Scraper.get_html('https://www.hltv.org/' + link), 'lxml')
