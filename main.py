@@ -61,19 +61,20 @@ def check_last_team_games(team_id, iag, iag_pos):
                 print(map_name, team1_score + '-' + team2_score, calc_coefs_for_map(team1_score, team2_score, enemy_team_raiting, actual_coef))
 
 def calc_coefs_for_map(team1_score, team2_score, enemy_team_raiting, actual_coef):
-    raiting_coef = (250 - enemy_team_raiting) / 70
-
     team1_score = int(team1_score)
     team2_score = int(team2_score)
     if team1_score < 1: team1_score = 1
     if team2_score < 1: team2_score = 1
 
+
     reduce_coef = 5
+    max_raiting_place = 250
+    places_reducer = 70
 
     if team1_score > team2_score:
-        return team1_score / team2_score * raiting_coef * actual_coef / reduce_coef + 1
+        return team1_score / team2_score * (max_raiting_place - enemy_team_raiting) / places_reducer * actual_coef / reduce_coef + 1
     else:
-        return -(team2_score / team1_score * raiting_coef * actual_coef / reduce_coef + 1)
+        return -(team2_score / team1_score * (enemy_team_raiting - max_raiting_place) / places_reducer * actual_coef / reduce_coef + 1)
 
 def check_match(link):
     match_page = BeautifulSoup(Scraper.get_html('https://www.hltv.org/' + link), 'lxml')
