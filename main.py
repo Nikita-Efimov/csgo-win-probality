@@ -6,7 +6,7 @@ from structs import InfoAboutGame, Map, GetTeamRaiting
 
 def main():
     # link = str(input())
-    link = 'https://www.hltv.org/matches/2332746/ago-vs-nemiga-lootbet-season-2'
+    link = 'https://www.hltv.org/matches/2332796/furia-vs-luminosity-ecs-season-7-north-america-week-3'
     parse_match(link)
 
 def parse_match(link):
@@ -16,13 +16,6 @@ def parse_match(link):
 
     check_last_games(soup, iag)
 
-    # iag.probs['Cache'] = [50, 50]
-    # iag.probs['Dust 2'] = [60, 40]
-    # iag.probs['Mirage'] = [70, 30]
-    # iag.probs['Inferno'] = [80, 20]
-    # iag.probs['Nuke'] = [90, 10]
-    # iag.probs['Train'] = [95, 10]
-    # iag.probs['Overpass'] = [100, 0]
     iag.print_block()
 
 def check_last_games(page_src, iag):
@@ -56,7 +49,7 @@ def check_last_team_games(team_id, iag, iag_pos):
                 match_link = result.find('a', class_='a-reset').get('href')
                 maps = check_match(match_link)
                 for map in maps:
-                    iag.probs[map.name][iag_pos] *= calc_coefs_for_map(map.team1_score, map.team2_score, enemy_team_raiting, actual_coef)
+                    iag.probs[map.name][iag_pos] += calc_coefs_for_map(map.team1_score, map.team2_score, enemy_team_raiting, actual_coef)
                     print(map.name, map.team1_score + '-' + map.team2_score, calc_coefs_for_map(map.team1_score, map.team2_score, enemy_team_raiting, actual_coef))
             elif map_text in short_to_long_maps_names:
                 map_name = short_to_long_maps_names[map_text]
@@ -64,20 +57,23 @@ def check_last_team_games(team_id, iag, iag_pos):
                 team1_score = result_scre.split('-')[0].strip()
                 team2_score = result_scre.split('-')[1].strip()
 
-                iag.probs[map_name][iag_pos] *= calc_coefs_for_map(team1_score, team2_score, enemy_team_raiting, actual_coef)
+                iag.probs[map_name][iag_pos] += calc_coefs_for_map(team1_score, team2_score, enemy_team_raiting, actual_coef)
                 print(map_name, team1_score + '-' + team2_score, calc_coefs_for_map(team1_score, team2_score, enemy_team_raiting, actual_coef))
 
 def calc_coefs_for_map(team1_score, team2_score, enemy_team_raiting, actual_coef):
-    raiting_coef = (300 - enemy_team_raiting) / 100
+    raiting_coef = (250 - enemy_team_raiting) / 70
 
     team1_score = int(team1_score)
     team2_score = int(team2_score)
     if team1_score < 1: team1_score = 1
     if team2_score < 1: team2_score = 1
 
-    game_coef = team1_score / team2_score
+    reduce_coef = 5
 
-    return game_coef * raiting_coef * actual_coef / 80 + 1
+    if team1_score > team2_score:
+        return team1_score / team2_score * raiting_coef * actual_coef / reduce_coef + 1
+    else:
+        return -(team2_score / team1_score * raiting_coef * actual_coef / reduce_coef + 1)
 
 def check_match(link):
     match_page = BeautifulSoup(Scraper.get_html('https://www.hltv.org/' + link), 'lxml')
@@ -95,43 +91,6 @@ def check_match(link):
 
     return maps
 
-def print_coefs(win_prob_team1, win_prob_team2):
-    max_percent = 95
-
-    team1_coef = 1 / (win_prob_team1 / max_percent)
-    team2_coef = 1 / (win_prob_team2 / max_percent)
-
-    format = '%4.2f'
-    print(format % team1_coef, '|', format % team2_coef)
-
-def get_num_of_maps(page_src):
-    match_desc: str = page_src.find('div', class_='padding preformatted-text').text
-    num_of_maps: str = match_desc[match_desc.find('Best of ') + 8:match_desc.find('Best of') + 9]
-    return int(num_of_maps)
-
-def head_to_head(page_src):
-    first_team_head_to_head = 1
-    second_team_head_to_head = 1
-
-    head_to_head_content: str = page_src.find('div', class_='standard-box head-to-head-listing')
-    results_table: str = head_to_head_content.find('table', class_='table')
-    games: str = results_table.find_all('tr')
-    for game in games:
-        date = game.find('td', class_='date').text
-
-        result = game.find('td', class_='result')
-        first_team_score = result.find_all('span')[0].text
-        second_team_score = result.find_all('span')[1].text
-
-        map = game.find('div', class_='dynamic-map-name-full').text
-
-        # print(date, map)
-        # print(first_team_score, '-', second_team_score)
-        first_team_head_to_head += int(first_team_score)
-        second_team_head_to_head += int(second_team_score)
-
-    return first_team_head_to_head, second_team_head_to_head
-
 # returns an array of names of teams in the match
 def get_names(soup):
 	names=[]
@@ -139,23 +98,6 @@ def get_names(soup):
 		names.append(name.text)
 
 	return names
-
-#return an array of team ranks
-def get_ranks(soup):
-	ranks = []
-	for link in get_teams_profile_links(soup):
-		profile_soup = BeautifulSoup(Scraper.get_html(link), 'lxml')
-		ranks.append(profile_soup.find('div', 'profile-team-stat').find('a').text)
-
-	return ranks
-
-#returns an array with the links on hltv profile of playing teams
-def get_teams_profile_links(soup):
-	links=[]
-	team_info = soup.findAll('div', class_ ='team')
-	for i in range(2): links.append('https://www.hltv.org' + str(team_info[i].find('a').get('href')))
-	return links
-
 
 if __name__ == "__main__":
 	main()
