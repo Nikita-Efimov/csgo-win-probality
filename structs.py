@@ -31,7 +31,7 @@ class InfoAboutGame:
     maps_names = ['Cache', 'Dust2', 'Mirage', 'Inferno', 'Nuke', 'Train', 'Overpass', 'Vertigo', 'Cobblestone']
 
     # Prob to coef converation options
-    max_percent = 93.5
+    max_percent = 93.8
 
     def __init__(self, team1_name, team2_name):
         self.team1_name: str = team1_name[:InfoAboutGame.team_name_size - 1]

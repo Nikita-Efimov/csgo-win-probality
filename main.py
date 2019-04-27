@@ -67,14 +67,13 @@ def calc_coefs_for_map(team1_score, team2_score, enemy_team_raiting, actual_coef
     if team2_score < 1: team2_score = 1
 
 
-    reduce_coef = 1
-    max_raiting_place = 250
+    max_raiting_place = 210
     places_reducer = 65
 
     if team1_score > team2_score:
-        return team1_score / team2_score * (max_raiting_place - enemy_team_raiting) / places_reducer * actual_coef / reduce_coef + 1
+        return team1_score / team2_score * (max_raiting_place - enemy_team_raiting) / places_reducer * actual_coef + 1
     else:
-        return team2_score / team1_score * (enemy_team_raiting - max_raiting_place) / places_reducer * actual_coef / reduce_coef + 1
+        return -(team2_score / team1_score * enemy_team_raiting / places_reducer * actual_coef + 1)
 
 def check_match(link):
     match_page = BeautifulSoup(Scraper.get_html('https://www.hltv.org/' + link), 'lxml')
