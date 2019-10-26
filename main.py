@@ -4,9 +4,12 @@ from scraper import Scraper
 from structs import InfoAboutGame, Map, GetTeamRaiting
 
 
+MAX_GAMES_FROM_HISTORY: int = 30
+
+
 def main():
-    # link = str(input())
-    link = 'https://www.hltv.org/matches/2332822/nochance-vs-gamerlegion-lootbet-season-2'
+    link = str(input('Enter hltv link: '))
+    # link = 'https://www.hltv.org/matches/2332822/nochance-vs-gamerlegion-lootbet-season-2'
     parse_match(link)
 
 def parse_match(link):
@@ -33,7 +36,7 @@ def check_last_team_games(team_id, iag, iag_pos):
     home_team_raiting = GetTeamRaiting.get(team_id)
 
     team_results = BeautifulSoup(Scraper.get_html('https://www.hltv.org/results?team=' + str(team_id)), 'lxml')
-    for container in team_results.find_all('div', class_='results-sublist'):
+    for container in team_results.find_all('div', class_='results-sublist')[:MAX_GAMES_FROM_HISTORY]:
         try:
             date = int(str(container.find('div', class_='result-con').get('data-zonedgrouping-entry-unix'))[:10])
         except ValueError: date = time()
